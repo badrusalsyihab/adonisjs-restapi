@@ -5,7 +5,8 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 
-const Hotel = use('App/Models/Hotel');
+const Hotel = use('App/Models/Hotel')
+const { validate } = use('Validator')
 
 /**
  * Resourceful controller for interacting with hotels
@@ -53,6 +54,30 @@ class HotelController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
+
+    const req = request.all()
+    
+    const rules = {
+      name: 'required',
+      address: 'required'
+    }
+    
+    const validation = await validate(req, rules)
+
+    // Check if request body validation
+    if (validation.fails()) return response.status(400).json({ message: validation.messages()[0].message })
+
+    const hotel = new Hotel()
+    hotel.name = req.name
+    hotel.address = req.address
+    await hotel.save()
+    const resData = {
+      message: 'Hotel has been created successfully.',
+      data: hotel
+    }
+
+    return response.status(201).json(resData)
+
   }
 
   /**
