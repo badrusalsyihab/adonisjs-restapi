@@ -61,7 +61,7 @@ class HotelController {
       name: 'required',
       address: 'required'
     }
-    
+
     const validation = await validate(req, rules)
 
     // Check if request body validation
@@ -90,6 +90,15 @@ class HotelController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
+
+    const hotel = await Hotel.find(params.id)
+    const resData = {
+      message: 'Hotel been fetched successfully.',
+      data: hotel
+    }
+
+    return response.status(200).json(resData)
+    
   }
 
   /**
