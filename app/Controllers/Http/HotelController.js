@@ -98,19 +98,7 @@ class HotelController {
     }
 
     return response.status(200).json(resData)
-    
-  }
 
-  /**
-   * Render a form to update an existing hotel.
-   * GET hotels/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
   }
 
   /**
@@ -122,6 +110,31 @@ class HotelController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    const req = request.all()
+    const hotel = await Hotel.find(params.id)
+
+    // rules validator
+    const rules = {
+      name: 'required',
+      address: 'required'
+    }
+    const validation = await validate(req, rules)
+
+    // Check if request body validation
+    if (validation.fails()) return response.status(400).json({ message: validation.messages()[0].message })
+
+    // Check if hotel with params.id not found
+    if (!hotel) return response.status(200).json({ message: `Hotel with id ${params.id} is not found or has not been created`, data: {} })
+
+    hotel.name = req.name
+    hotel.address = req.address
+    await hotel.save()
+
+    const resData = {
+      message: 'Hotel has been fetched successfully.',
+      data: hotel
+    }
+    return response.status(200).json(resData)
   }
 
   /**
@@ -133,7 +146,17 @@ class HotelController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
+    const hotel = await Hotel.find(params.id)
+    if (!hotel) return response.status(200).json({ message: `Hotel with id ${params.id} is not found or has not been created`, data: {} })
+    await hotel.delete()
+
+    const resData = {
+      message: `Hotel with id ${params.id} has been deleted successfully.`,
+      data: hotel
+    }
+    return response.status(200).json(resData)
   }
+  
 }
 
 module.exports = HotelController
